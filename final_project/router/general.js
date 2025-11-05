@@ -3,7 +3,7 @@ let books = require("./booksdb.js");
 let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
 const public_users = express.Router();
-
+const axios = require('axios');
 
 const userExists = (username) => {
     //Check to see 
@@ -39,40 +39,87 @@ public_users.post("/register", (req,res) => {
 });
 
 // Get the book list available in the shop
-public_users.get('/',function (req, res) {
+public_users.get('/', async function (req, res) {
   //Write your code here
-  return res.send(JSON.stringify(books, 4, null));
+  try {
+    const allBooks = await new Promise((resolve) => {
+       setTimeout(()=> resolve(books)
+    , 300 )
+    })
+    res.json(allBooks)
+  } catch (err) {
+    res.status(404).json({error: err.message })
+  }
 });
 
 // Get book details based on ISBN
-public_users.get('/isbn/:isbn',function (req, res) {
+public_users.get('/isbn/:isbn', async function (req, res) {
   //Write your code here
-  res.send(books[req.params.isbn]);
- });
+  let isbn = req.params.isbn
   
+  try {
+   const booksByID = await new Promise((resolve) => { 
+    
+    setTimeout(() => resolve(books[isbn]), 300) 
+
+   })
+    res.json(booksByID)
+   
+} 
+
+    
+
+     catch(err) {
+        
+        res.status(404).json({error: err.message })
+    }
+    }
+)
 // Get book details based on author
-public_users.get('/author/:author',function (req, res) {
+public_users.get('/author/:author', async function (req, res) {
   //Write your code here
  let author = req.params.author;
  let bookKeys = Object.values(books);
  let matchedAuthor =  bookKeys.filter(key => key.author === author)
- return res.send(matchedAuthor);
+
+ try {
+    const booksByAuthor = await new Promise((resolve) => {
+        setTimeout(() => resolve(matchedAuthor), 300)
+    })
+    res.json(booksByAuthor);
+ } catch(err){
+    res.status(404).json({error: err.message })
+
+ }
+;
 });
 
 // Get all books based on title
-public_users.get('/title/:title',function (req, res) {
+public_users.get('/title/:title', async function (req, res) {
   //Write your code here
     let title = req.params.title;
     let bookKeys = Object.values(books);
     let matchedTitle = bookKeys.filter(key => key.title === title);
-    return res.send(matchedTitle);
+    try {
+        const booksByTitle = await new Promise((resolve) => {
+            setTimeout(()=> resolve(matchedTitle), 300)
+        })
+        res.json(booksByTitle)
+    } catch (err) {
+    res.status(404).json({error: err.message })
+        
+    }
 });
+
+
 
 //  Get book review
 public_users.get('/review/:isbn',function (req, res) {
   //Write your code here
   let isbn = req.params.isbn; 
-  return res.send(books[isbn].reviews);
+
+  return res.send(books[isbn].reviews)
+    
 });
 
 module.exports.general = public_users;
